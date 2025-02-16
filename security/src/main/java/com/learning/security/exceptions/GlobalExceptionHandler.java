@@ -31,9 +31,9 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleValidationExceptions(Exception ex) {
-        log.error(ex.getClass() + ex.getMessage());
-        return new ResponseEntity<>(new ResponseMessage("Server Error, Try later !"), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    // @ExceptionHandler(Exception.class)
+    // public ResponseEntity<?> handleValidationExceptions(Exception ex) {
+    //     log.error(ex.getClass() + ex.getMessage());
+    //     return new ResponseEntity<>(new ResponseMessage("Server Error, Try later !"), HttpStatus.INTERNAL_SERVER_ERROR);
+    // }
 }

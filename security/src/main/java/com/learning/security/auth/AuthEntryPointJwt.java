@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.learning.security.exceptions.CustomJwtException;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -16,49 +18,76 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
-
+//import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 @Component
-@Slf4j
+//@Slf4j
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
+    Logger log = LoggerFactory.getLogger(AuthEntryPointJwt.class);
+
     /**
-     * This method will be triggerd anytime unauthenticated User requests a secured HTTP resource 
+     * This method will be triggerd anytime unauthenticated User requests a secured HTTP resource
      * and an AuthenticationException is thrown
      * @param request that resulted in an <code>AuthenticationException</code>
 	 * @param response so that the user agent can begin authentication
 	 * @param authException that caused the invocation
      */
-    
+
+//    @Override
+//    public void commence(HttpServletRequest request, HttpServletResponse response,
+//            AuthenticationException authException) {
+//
+//        // log.error("Un-authorization error: {}", authException.getMessage());
+//        // response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized"); // 401
+//
+//        try {
+//            // Customizing the response
+//
+//            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//
+//            final Map<String, Object> body = new HashMap<>();
+//
+//            body.put("Status", HttpServletResponse.SC_UNAUTHORIZED);
+//            body.put("Error", "Authentication error !");
+//            body.put("Message", authException.getMessage());
+//            body.put("Path", request.getServletPath());
+//
+//            final ObjectMapper mapper = new ObjectMapper();
+//            mapper.writeValue(response.getOutputStream(), body);
+//            log.error("Auth Error: {} ", authException.getMessage());
+//
+//        } catch (IOException e) {
+//            log.error(e.getMessage());
+//        }
+//    }
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
-            AuthenticationException authException) {
-        
-        // log.error("Unauthorization error: {}", authException.getMessage());
-        // response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized"); // 401
-
+                         AuthenticationException authException) {
         try {
-            // Customizing the response
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            final Map<String, Object> body = new HashMap<>();
+            body.put("Status", HttpServletResponse.SC_UNAUTHORIZED);
+            body.put("Path", request.getServletPath());
 
-        final Map<String, Object> body = new HashMap<>();
+            if (authException.getCause() instanceof CustomJwtException) {
+                CustomJwtException jwtException = (CustomJwtException) authException.getCause();
+                response.setStatus(jwtException.getStatusCode());
+                body.put("Error", jwtException.getMessage());
+            } else {
+                body.put("Error", "Unauthorized!");
+                body.put("Message", authException.getMessage());
+            }
 
-        body.put("Status", HttpServletResponse.SC_UNAUTHORIZED);
-        body.put("Error", "Unauthorized !");
-        body.put("Message", authException.getMessage());
-        body.put("Path", request.getServletPath());
-
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(response.getOutputStream(), body);
-        log.error(authException.getMessage());
-            
+            final ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(response.getOutputStream(), body);
+            log.error("Auth Error: {} ", authException.getMessage());
         } catch (IOException e) {
-            log.error(e.getMessage(), e);
+            log.error(e.getMessage());
         }
-        
-
-        
     }
+
 }

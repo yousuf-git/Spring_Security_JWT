@@ -52,7 +52,6 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NotBlank
     private Integer id;
 
     @NotBlank

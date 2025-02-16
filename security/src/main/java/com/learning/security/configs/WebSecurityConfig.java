@@ -14,6 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.learning.security.auth.AuthEntryPointJwt;
 import com.learning.security.auth.AuthTokenFilter;
+import com.learning.security.auth.JwtAccessDeniedHandler;
 import com.learning.security.services.UserDetailsServiceImpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,12 +62,18 @@ public class WebSecurityConfig {
 
     @Autowired
     AuthEntryPointJwt authEntryPointJwt;
+    @Autowired
+    JwtAccessDeniedHandler accessDeniedHandler;
     
     @Bean 
     SecurityFilterChain getFilterChain(HttpSecurity http) throws Exception {
         
         http.csrf(csrf -> csrf.disable())
-            .exceptionHandling(e -> e.authenticationEntryPoint(authEntryPointJwt))
+            .exceptionHandling((e) -> {
+                    e.authenticationEntryPoint(authEntryPointJwt);
+                    e.accessDeniedHandler(accessDeniedHandler);
+                } 
+            )
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             // ____________________________________
             // .authenticationProvider(getAuthProvider())

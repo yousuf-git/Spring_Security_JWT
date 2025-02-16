@@ -5,6 +5,8 @@ import java.util.Date;
 
 import javax.crypto.SecretKey;
 
+import com.learning.security.exceptions.CustomJwtException;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,11 +41,13 @@ public class JwtUtils {
 
         // https://github.com/jwtk/jjwt?tab=readme-ov-file#creating-a-jwt
         return Jwts.builder()
+                .header().add("typ", "JWT")
+                .and()
                 .issuer("M. Yousuf")
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date())
                 .expiration(new Date(new Date().getTime() + jwtExpirationTimeInMs))
-                .signWith(getKey())
+                .signWith(getKey(), Jwts.SIG.HS256)
                 .compact();
         
 
@@ -57,17 +61,24 @@ public class JwtUtils {
         // It is usually recommended to specify the signing key by calling the JwtBuilder's signWith method and let JJWT determine the most secure algorithm allowed for the specified key.
                 // .signWith(getKey())
             // .compact();
-                
-
     }
 
     private SecretKey getKey() {
+        // SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+        // logger.info("Key: {}", key);
+        // logger.info("Length: {}", Decoders.BASE64.decode(jwtSecret).length);
+        // return key;
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
     public boolean validateJwt(String jwtToken) {
+        logger.debug("jwtToken: {}", jwtToken);
         try {
-            Jwts.parser().decryptWith(getKey()).build().parse(jwtToken);
+            Jwts.parser()
+                    // .sig().add(Jwts.SIG.HS256)
+                // .and()
+                .verifyWith(getKey())
+                .build().parseSignedClaims(jwtToken);
             return true;
             // Handling the exceptions that can be thrown by parse()
             /**
@@ -78,17 +89,22 @@ public class JwtUtils {
              * 5. IllegalArgumentException - if the specified string is null or empty or only whitespace.
              */
         } catch (MalformedJwtException e) {
-            logger.error("JWT was incorrectly constructed {}", e.getMessage());
+            logger.error("JWT was incorrectly constructed: {}", e.getMessage());
+            throw new CustomJwtException("Invalid JWT token format", HttpServletResponse.SC_BAD_REQUEST);
         } catch (SignatureException e) {
-            logger.error("JWS signature was discovered, but could not be verified {}", e.getMessage());
+            logger.error("JWS signature was discovered, but could not be verified: {}", e.getMessage());
+            throw new CustomJwtException("Invalid token signature", HttpServletResponse.SC_UNAUTHORIZED);
         } catch (SecurityException e) {
-            logger.error("JWT string is a JWE and decryption fails {}", e.getMessage());
+            logger.error("JWT string is a JWE and decryption fails: {}", e.getMessage());
+            throw new CustomJwtException("Token Decryption failed", HttpServletResponse.SC_BAD_REQUEST);
         } catch (ExpiredJwtException e) {
-            logger.error("Token is Expired {}", e);
+            logger.error("Token is expired: {}", e.getMessage());
+            throw new CustomJwtException("Token expired", HttpServletResponse.SC_UNAUTHORIZED);
         } catch (IllegalArgumentException e) {
-            logger.error("Token is null or empty or only whitespace {}", e.getMessage());
+            logger.error("Token is null or empty or only whitespace: {}", e.getMessage());
+            throw new CustomJwtException("Token is missing or invalid", HttpServletResponse.SC_BAD_REQUEST);
         }
-        return false;
+//        return false;
 
          
     }
@@ -101,9 +117,10 @@ public class JwtUtils {
     public String getUsernameFromJwtToken(String jwtToken) {
         return (String) Jwts.parser()
                     // .verifyWith(getKey())
-                    .decryptWith(getKey())
+                    .verifyWith(getKey())
                     .build()
                     .parseSignedClaims(jwtToken)
-                    .getHeader().get("Subject");
+                    .getPayload().getSubject();
+                    // .getHeader().get("Subject");
     }
 }

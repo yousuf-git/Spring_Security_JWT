@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -70,7 +71,7 @@ public class AuthController {
         // If not - Build a new user
         User user = new User();
         // 
-        /**
+        /*
          * --------------- <code>User<code> requires ---------------
          * String username
          * String email
@@ -92,8 +93,8 @@ public class AuthController {
 
     /**
      * 
-     * @param user
-     * @param rolesFromReq
+     * @param user          User object to which roles are to be attached
+     * @param rolesFromReq  Set of roles from the request
      * @return              false if no valid role found in rolesFromReq, true otherwise
      * @apiNote             All defined Roles Must exist in the DB already
      */
@@ -101,14 +102,10 @@ public class AuthController {
     private boolean setRoles(User user, Set<String> rolesFromReq) {
 
         // Default Role - USER
-        if (rolesFromReq == null) {
-            // Set<Role> roles = new HashSet<>();
-            // Role role = new Role();
-            // role.setName(ERole.USER);
-            // roles.add(role);
-            // user.setRoles(roles);
-            // Concising the above code    
-            user.setRoles(Set.of(Role.builder().name(ERole.USER).build()));
+        if (rolesFromReq == null || rolesFromReq.isEmpty()) {
+            Role userRole = roleRepo.findByName(ERole.ROLE_USER)
+                .orElseThrow(() -> new RuntimeException("Error: Role not found in DB."));
+            user.setRoles(Set.of(userRole));
             return true;
         }
 
@@ -121,22 +118,20 @@ public class AuthController {
         for (String roleStr : rolesFromReq) {
             switch (roleStr) {
                 case "user":
-                    Role userRole = roleRepo.findByName(ERole.USER)
+                    Role userRole = roleRepo.findByName(ERole.ROLE_USER)
                         .orElseThrow(() -> new RuntimeException("Error: Role not found in DB."));
                     roles.add(userRole);
                     // roles.add(Role.of(ERole.USER));
                     break;
                 case "admin":
-                    Role adminRole = roleRepo.findByName(ERole.ADMIN)
+                    Role adminRole = roleRepo.findByName(ERole.ROLE_ADMIN)
                         .orElseThrow(() -> new RuntimeException("Error: Role not found in DB."));
                     roles.add(adminRole);
-                    // roles.add(Role.of(ERole.ADMIN));
                     break;
                 case "mod":
-                    Role modRole = roleRepo.findByName(ERole.MODERATOR)
+                    Role modRole = roleRepo.findByName(ERole.ROLE_MODERATOR)
                         .orElseThrow(() -> new RuntimeException("Error: Role not found in DB."));
                     roles.add(modRole);
-                    // roles.add(Role.of(ERole.MODERATOR));
                     break;
                 default:
                     break;
@@ -177,7 +172,7 @@ public class AuthController {
         UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
 
         List<String> roles = userDetailsImpl.getRoles().stream()
-                    .map(authority -> authority.getAuthority())
+                    .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
 
         JwtResponse jwtResponse = new JwtResponse(jwt, userDetailsImpl.getId(), userDetailsImpl.getUsername(), userDetailsImpl.getEmail(), roles);
