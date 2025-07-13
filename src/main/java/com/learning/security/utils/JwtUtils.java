@@ -99,7 +99,7 @@ public class JwtUtils {
             throw new CustomJwtException("Token Decryption failed", HttpServletResponse.SC_BAD_REQUEST);
         } catch (ExpiredJwtException e) {
             logger.error("Token is expired: {}", e.getMessage());
-            throw new CustomJwtException("Token expired", HttpServletResponse.SC_UNAUTHORIZED);
+            throw new CustomJwtException("Token expired: " + e.getMessage(),  HttpServletResponse.SC_UNAUTHORIZED);
         } catch (IllegalArgumentException e) {
             logger.error("Token is null or empty or only whitespace: {}", e.getMessage());
             throw new CustomJwtException("Token is missing or invalid", HttpServletResponse.SC_BAD_REQUEST);
@@ -110,11 +110,12 @@ public class JwtUtils {
     }
 
     /**
-     * @param   jwtToken
-     * @Steps   Build - Get claims - get subject (I've set username as subject)
-     * @see     #generateTokenByAuth()
+     * @param   jwtToken The token received from the client
+     * @see     #generateTokenByAuth
      * */
     public String getUsernameFromJwtToken(String jwtToken) {
+//      Steps   Build - Get claims - get subject (I've set username as subject)
+
         return (String) Jwts.parser()
                     // .verifyWith(getKey())
                     .verifyWith(getKey())

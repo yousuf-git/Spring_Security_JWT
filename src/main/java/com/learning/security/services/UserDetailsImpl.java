@@ -4,6 +4,7 @@
 
 package com.learning.security.services;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +25,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserDetailsImpl implements UserDetails {
 
+    @Serial
     private static final long serialVersionUID = 1L;    // It is used to ensure that the class sending the object is the same as the class receiving the object.
 
     private Integer id;
@@ -36,7 +38,7 @@ public class UserDetailsImpl implements UserDetails {
     /**
     * You can notice that I've converted Set<Role> into List<GrantedAuthority>.
     * It is important to work with Spring Security and Authentication object later.
-    * 
+    * <p>
     * GrantedAuthority is an interface that represents an authority granted to an Authentication object.
     * It is used to define the authorities granted to users.
         

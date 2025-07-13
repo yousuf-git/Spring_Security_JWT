@@ -70,14 +70,27 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
             final Map<String, Object> body = new HashMap<>();
-            body.put("Status", HttpServletResponse.SC_UNAUTHORIZED);
+//            body.put("Status", HttpServletResponse.SC_UNAUTHORIZED);
             body.put("Path", request.getServletPath());
+            // Check for stored JWT exception first
+            CustomJwtException jwtException = (CustomJwtException) request.getAttribute("jwt.exception");
 
-            if (authException.getCause() instanceof CustomJwtException) {
-                CustomJwtException jwtException = (CustomJwtException) authException.getCause();
+
+//            if (authException.getCause() instanceof CustomJwtException) {
+//                CustomJwtException jwtException = (CustomJwtException) authException.getCause();
+//                response.setStatus(jwtException.getStatusCode());
+//                body.put("Error", jwtException.getMessage());
+//            } else {
+//                body.put("Error", "Unauthorized!");
+//                body.put("Message", authException.getMessage());
+//            }
+            if (jwtException != null) {
                 response.setStatus(jwtException.getStatusCode());
+                body.put("Status", jwtException.getStatusCode());
                 body.put("Error", jwtException.getMessage());
             } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                body.put("Status", HttpServletResponse.SC_UNAUTHORIZED);
                 body.put("Error", "Unauthorized!");
                 body.put("Message", authException.getMessage());
             }

@@ -36,7 +36,7 @@ public class Role {
 
     // Role can be only of the types defined in the enum ERoles
     @Enumerated(EnumType.STRING)
-    @Column(length = 10)
+    @Column(length = 20)
 //    @NotNull        // jakarta validation
     @NonNull        // for lombok - I needed parameterized constructor Role(ERole name) for the method of
     private ERole name;

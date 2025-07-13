@@ -18,12 +18,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Autowired
     private UserRepo userRepo;
 
+    /**
+     * Get user from DB and convert it into UserDetailsImpl object then return it.
+     */
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        /**
-         * Get user from DB and convert it into UserDetailsImpl object then return it.
-         */
         return userRepo.findByUsername(username)
             .map(UserDetailsImpl::build)
             .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));

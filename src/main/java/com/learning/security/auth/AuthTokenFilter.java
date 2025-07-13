@@ -1,4 +1,5 @@
 package com.learning.security.auth;
+import com.learning.security.exceptions.CustomJwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,39 +46,43 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 		try {
 			String jwtToken = parseJwtFromRequest(request);
 		
-		if (jwtToken != null && jwtUtils.validateJwt(jwtToken)) {
-			String username = jwtUtils.getUsernameFromJwtToken(jwtToken);
+			if (jwtToken != null && jwtUtils.validateJwt(jwtToken)) {
+				String username = jwtUtils.getUsernameFromJwtToken(jwtToken);
 
-			UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
+				UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
 
-			// Setting the current UserDetails in SecurityContext using
-			// https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-securitycontext
+				// Setting the current UserDetails in SecurityContext using
+				// https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-securitycontext
 
-			UsernamePasswordAuthenticationToken authentication = 
-			new UsernamePasswordAuthenticationToken(
-					userDetails,                        // principal
-					null,                   // password
-					userDetails.getAuthorities());      // GrantedAuthorities
+				UsernamePasswordAuthenticationToken authentication =
+				new UsernamePasswordAuthenticationToken(
+						userDetails,                        // principal
+						null,                   // password
+						userDetails.getAuthorities());      // GrantedAuthorities
 
-			/**
-			 *  Setting additional details about the authentication process
-			 *  (such as the IP address and session ID) to the authentication object.
-			 *  new WebAuthenticationDetailsSource().buildDetails(request) extracts these details from the current HTTP request and attaches them to the authentication object.
-			 *  Essentially, it enriches the authentication object with request-specific information.
-			 */
-			authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+				/*
+				 *  Setting additional details about the authentication process
+				 *  (such as the IP address and session ID) to the authentication object.
+				 *  new WebAuthenticationDetailsSource().buildDetails(request) extracts these details from the current HTTP request and attaches them to the authentication object.
+				 *  Essentially, it enriches the authentication object with request-specific information.
+				 */
+				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-			/**
-			 * After this, everytime you want to get UserDetails, just use SecurityContext like this:
-			 * UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-			 * And you can get the username, password and authorities like this:
-			 * userDetails.getUsername()
-			 * userDetails.getPassword()
-			 * userDetails.getAuthorities()
-			*/
-				
-			} 
+				SecurityContextHolder.getContext().setAuthentication(authentication);
+				/*
+				 * After this, everytime you want to get UserDetails, just use SecurityContext like this:
+				 * UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+				 * And you can get the username, password and authorities like this:
+				 * userDetails.getUsername()
+				 * userDetails.getPassword()
+				 * userDetails.getAuthorities()
+				*/
+
+			}
+		} catch (CustomJwtException e) {
+			// Store the custom exception in request attribute
+			request.setAttribute("jwt.exception", e);
+			logger.error("JWT validation failed: {}", e.getMessage());
 		} catch (Exception e) {
 			logger.error("Cannot set user Authentication: {}", e.getMessage());
 		}
@@ -90,7 +95,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 	private String parseJwtFromRequest(HttpServletRequest request) {
 		String authHeader = request.getHeader("Authorization");
 
-		/**
+		/*
 		 * Sample
 		 * Authorization: Bearer 
 		 */

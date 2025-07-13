@@ -27,7 +27,7 @@ public class SwaggerConfig {
                     
                     .version("v1.0.0")
                     
-                    .description("This is a template Spring Boot RESTful microservice using Spring Security and JWT Token")
+                    .description("This is a template Spring Boot REST microservice using Spring Security and JWT Token")
                     
                     .contact(new Contact().name("M. Yousuf").email("yousuf.work09@gmail.com").url("https://github.com/yousuf-git"))
                     

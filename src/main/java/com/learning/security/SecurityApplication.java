@@ -8,7 +8,7 @@ public class SecurityApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(SecurityApplication.class, args);
-		System.out.println("Hi Yousuf");
+		System.out.println("Hi Yousuf, Server Started Successfully... !");
 
 	}
 
