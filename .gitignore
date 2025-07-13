@@ -20,8 +20,6 @@ ignore
 *.tar.gz
 *.rar
 
-readme.md
-
 # Virtual machine crash logs
 hs_err_pid*
 replay_pid*
