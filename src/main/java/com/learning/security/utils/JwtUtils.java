@@ -23,6 +23,25 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
 import io.jsonwebtoken.security.SignatureException;
 
+/**
+ * <h2>JwtUtils</h2>
+ * <p>
+ * <b>Purpose:</b><br>
+ * This utility class provides methods for generating, validating, and parsing JWT tokens.<br>
+ * </p>
+ * <ul>
+ *   <li>Handles all JWT operations such as token creation, signature verification, and extracting claims.</li>
+ *   <li>Centralizes JWT logic for use by authentication filters and controllers.</li>
+ * </ul>
+ * <p><b>When is it used?</b></p>
+ * <ul>
+ *   <li>Called by authentication filters and controllers during login, request validation, and user authentication.</li>
+ * </ul>
+ * <p><b>What happens after?</b></p>
+ * <ul>
+ *   <li>Tokens are generated for authenticated users, validated for incoming requests, and claims are extracted for authorization.</li>
+ * </ul>
+ */
 @Component
 public class JwtUtils {
 
@@ -34,6 +53,27 @@ public class JwtUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
     
+    /**
+     * <h3>generateTokenByAuth</h3>
+     * <p>
+     * <b>Purpose:</b><br>
+     * Generates a JWT token for a successfully authenticated user.<br>
+     * </p>
+     * <ul>
+     *   <li>Uses user details from the authentication object to set claims and expiration.</li>
+     *   <li>Signs the token with a secret key.</li>
+     * </ul>
+     * <p><b>When is it called?</b></p>
+     * <ul>
+     *   <li>After successful authentication, typically during login.</li>
+     * </ul>
+     * <p><b>What happens after?</b></p>
+     * <ul>
+     *   <li>The generated token is sent to the client for use in subsequent requests.</li>
+     * </ul>
+     * @param auth the Authentication object containing user details
+     * @return the generated JWT token as a String
+     */
     public String generateTokenByAuth(Authentication auth) {
         
         // Only valid authentication object should reach here
@@ -71,17 +111,36 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
+    /**
+     * <h3>validateJwt</h3>
+     * <p>
+     * <b>Purpose:</b><br>
+     * Validates the provided JWT token for structure, signature, and expiration.<br>
+     * </p>
+     * <ul>
+     *   <li>Throws a <code>CustomJwtException</code> if the token is invalid, expired, or malformed.</li>
+     *   <li>Returns true if the token is valid.</li>
+     * </ul>
+     * <p><b>When is it called?</b></p>
+     * <ul>
+     *   <li>During request filtering to ensure the token is valid before authentication.</li>
+     * </ul>
+     * <p><b>What happens after?</b></p>
+     * <ul>
+     *   <li>If valid, authentication proceeds; if not, error handling is triggered.</li>
+     * </ul>
+     * @param jwtToken the JWT token to validate
+     * @return true if valid, otherwise throws exception
+     */
     public boolean validateJwt(String jwtToken) {
         logger.debug("jwtToken: {}", jwtToken);
         try {
             Jwts.parser()
-                    // .sig().add(Jwts.SIG.HS256)
-                // .and()
                 .verifyWith(getKey())
                 .build().parseSignedClaims(jwtToken);
             return true;
             // Handling the exceptions that can be thrown by parse()
-            /**
+            /*
              * 1. MalformedJwtException - if the specified JWT was incorrectly constructed 
              * 2. SignatureException - if a JWS signature was discovered, but could not be verified. 
              * 3. SecurityException - if the specified JWT string is a JWE and decryption fails
@@ -90,13 +149,13 @@ public class JwtUtils {
              */
         } catch (MalformedJwtException e) {
             logger.error("JWT was incorrectly constructed: {}", e.getMessage());
-            throw new CustomJwtException("Invalid JWT token format", HttpServletResponse.SC_BAD_REQUEST);
+            throw new CustomJwtException("JWT was incorrectly constructed: " + e.getMessage(), HttpServletResponse.SC_BAD_REQUEST);
         } catch (SignatureException e) {
             logger.error("JWS signature was discovered, but could not be verified: {}", e.getMessage());
             throw new CustomJwtException("Invalid token signature", HttpServletResponse.SC_UNAUTHORIZED);
         } catch (SecurityException e) {
             logger.error("JWT string is a JWE and decryption fails: {}", e.getMessage());
-            throw new CustomJwtException("Token Decryption failed", HttpServletResponse.SC_BAD_REQUEST);
+            throw new CustomJwtException("JWT string is a JWE and decryption failed", HttpServletResponse.SC_BAD_REQUEST);
         } catch (ExpiredJwtException e) {
             logger.error("Token is expired: {}", e.getMessage());
             throw new CustomJwtException("Token expired: " + e.getMessage(),  HttpServletResponse.SC_UNAUTHORIZED);
@@ -110,14 +169,29 @@ public class JwtUtils {
     }
 
     /**
-     * @param   jwtToken The token received from the client
-     * @see     #generateTokenByAuth
-     * */
+     * <h3>getUsernameFromJwtToken</h3>
+     * <p>
+     * <b>Purpose:</b><br>
+     * Extracts the username (subject) from the provided JWT token.<br>
+     * </p>
+     * <ul>
+     *   <li>Parses the token and retrieves the subject claim.</li>
+     * </ul>
+     * <p><b>When is it called?</b></p>
+     * <ul>
+     *   <li>After token validation, to identify the user making the request.</li>
+     * </ul>
+     * <p><b>What happens after?</b></p>
+     * <ul>
+     *   <li>The username is used to load user details and set authentication context.</li>
+     * </ul>
+     * @param jwtToken the JWT token
+     * @return the username (subject) from the token
+     */
     public String getUsernameFromJwtToken(String jwtToken) {
 //      Steps   Build - Get claims - get subject (I've set username as subject)
 
-        return (String) Jwts.parser()
-                    // .verifyWith(getKey())
+        return Jwts.parser()
                     .verifyWith(getKey())
                     .build()
                     .parseSignedClaims(jwtToken)

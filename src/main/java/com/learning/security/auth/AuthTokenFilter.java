@@ -1,5 +1,6 @@
 package com.learning.security.auth;
 import com.learning.security.exceptions.CustomJwtException;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,27 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
+/**
+ * <h2>AuthTokenFilter</h2>
+ * <p>
+ * <b>Purpose:</b><br>
+ * This class is a custom filter that extends <code>OncePerRequestFilter</code> to handle JWT authentication for each HTTP request.<br>
+ * </p>
+ * <ul>
+ *   <li>Extracts the JWT token from the Authorization header of incoming requests.</li>
+ *   <li>Validates the token and, if valid, loads user details and sets the authentication in the Spring Security context.</li>
+ *   <li>If the token is invalid or expired, it stores the exception for further handling (e.g., by <code>AuthEntryPointJwt</code>).</li>
+ * </ul>
+ * <p><b>When is it used?</b></p>
+ * <ul>
+ *   <li>Automatically invoked by Spring Security for every request before it reaches the controller, as part of the filter chain.</li>
+ * </ul>
+ * <p><b>What happens after?</b></p>
+ * <ul>
+ *   <li>If authentication is successful, the user's details are available in the security context for the rest of the request.</li>
+ *   <li>If authentication fails, the request proceeds but with no authentication set, and errors are handled downstream.</li>
+ * </ul>
+ */
 // @Component
 public class AuthTokenFilter extends OncePerRequestFilter {
 
@@ -40,8 +62,35 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
 	private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
+	/**
+	 * <h3>doFilterInternal</h3>
+	 * <p>
+	 * <b>Purpose:</b><br>
+	 * Processes each HTTP request to check for a JWT token, validate it, and set authentication if valid.<br>
+	 * </p>
+	 * <ul>
+	 *   <li>Extracts the JWT from the Authorization header.</li>
+	 *   <li>Validates the token using <code>JwtUtils</code>.</li>
+	 *   <li>If valid, loads user details and sets authentication in the security context.</li>
+	 *   <li>If invalid, stores the exception for error handling.</li>
+	 * </ul>
+	 * <p><b>When is it called?</b></p>
+	 * <ul>
+	 *   <li>Automatically by the Spring Security filter chain for every request.</li>
+	 * </ul>
+	 * <p><b>What happens after?</b></p>
+	 * <ul>
+	 *   <li>If authentication is set, the user is considered authenticated for the rest of the request.</li>
+	 *   <li>Otherwise, the request continues unauthenticated and may be rejected by later security checks.</li>
+	 * </ul>
+	 * @param request the HTTP request
+	 * @param response the HTTP response
+	 * @param filterChain the filter chain to pass the request/response to the next filter
+	 * @throws ServletException if an error occurs during the filter process
+	 * @throws IOException if an I/O error occurs
+	 */
 	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
 			
 		try {
 			String jwtToken = parseJwtFromRequest(request);
@@ -92,6 +141,27 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 			
 	}
 
+	/**
+	 * <h3>parseJwtFromRequest</h3>
+	 * <p>
+	 * <b>Purpose:</b><br>
+	 * Extracts the JWT token from the Authorization header of the HTTP request.<br>
+	 * </p>
+	 * <ul>
+	 *   <li>Checks if the Authorization header is present and starts with "Bearer ".</li>
+	 *   <li>Returns the token part if present, otherwise returns null.</li>
+	 * </ul>
+	 * <p><b>When is it called?</b></p>
+	 * <ul>
+	 *   <li>Internally by <code>doFilterInternal</code> for every request.</li>
+	 * </ul>
+	 * <p><b>What happens after?</b></p>
+	 * <ul>
+	 *   <li>The extracted token is validated and used for authentication if present.</li>
+	 * </ul>
+	 * @param request the HTTP request
+	 * @return the JWT token string or null if not present
+	 */
 	private String parseJwtFromRequest(HttpServletRequest request) {
 		String authHeader = request.getHeader("Authorization");
 

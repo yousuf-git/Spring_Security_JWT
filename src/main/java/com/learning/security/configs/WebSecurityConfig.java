@@ -21,6 +21,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * <h2>WebSecurityConfig</h2>
+ * <p>
+ * <b>Purpose:</b><br>
+ * This class configures the security settings for the Spring Boot application.<br>
+ * </p>
+ * <ul>
+ *   <li>Defines beans for authentication, password encoding, and security filter chain.</li>
+ *   <li>Sets up which endpoints are secured and which are publicly accessible.</li>
+ *   <li>Configures exception handling for authentication and authorization errors.</li>
+ *   <li>Integrates custom JWT authentication and access denied handlers.</li>
+ * </ul>
+ * <p><b>When is it used?</b></p>
+ * <ul>
+ *   <li>Loaded at application startup to set up Spring Security's behavior for all HTTP requests.</li>
+ * </ul>
+ * <p><b>What happens after?</b></p>
+ * <ul>
+ *   <li>All incoming requests are filtered and authorized according to these rules.</li>
+ *   <li>Custom handlers are invoked for authentication and authorization failures.</li>
+ * </ul>
+ */
 @Configuration
 // @EnableWebSecurity
 @EnableMethodSecurity
@@ -32,12 +54,50 @@ public class WebSecurityConfig {
     // @Autowired
     // JwtUtils jwtUtils;
     
+    /**
+     * <h3>getAuthTokenFilter</h3>
+     * <p>
+     * <b>Purpose:</b><br>
+     * Provides a bean for the custom JWT authentication filter.<br>
+     * </p>
+     * <ul>
+     *   <li>Used to intercept and validate JWT tokens in requests.</li>
+     * </ul>
+     * <p><b>When is it called?</b></p>
+     * <ul>
+     *   <li>Automatically by Spring when building the security filter chain.</li>
+     * </ul>
+     * <p><b>What happens after?</b></p>
+     * <ul>
+     *   <li>The filter is added to the security filter chain.</li>
+     * </ul>
+     * @return AuthTokenFilter instance
+     */
     @Bean
     public AuthTokenFilter getAuthTokenFilter() {
         return new AuthTokenFilter();
         // return new AuthTokenFilter(jwtUtils);
     }
 
+    /**
+     * <h3>getAuthProvider</h3>
+     * <p>
+     * <b>Purpose:</b><br>
+     * Provides a bean for the authentication provider using DAO and password encoder.<br>
+     * </p>
+     * <ul>
+     *   <li>Handles authentication logic using user details and password encoding.</li>
+     * </ul>
+     * <p><b>When is it called?</b></p>
+     * <ul>
+     *   <li>Used by Spring Security during authentication.</li>
+     * </ul>
+     * <p><b>What happens after?</b></p>
+     * <ul>
+     *   <li>Authentication provider is used to validate user credentials.</li>
+     * </ul>
+     * @return DaoAuthenticationProvider instance
+     */
     @Bean
     public DaoAuthenticationProvider getAuthProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -50,11 +110,51 @@ public class WebSecurityConfig {
         return authProvider;
     }
 
+    /**
+     * <h3>passwordEncoder</h3>
+     * <p>
+     * <b>Purpose:</b><br>
+     * Provides a bean for password encoding using BCrypt.<br>
+     * </p>
+     * <ul>
+     *   <li>Ensures passwords are securely hashed and compared.</li>
+     * </ul>
+     * <p><b>When is it called?</b></p>
+     * <ul>
+     *   <li>Used by authentication provider and user service.</li>
+     * </ul>
+     * <p><b>What happens after?</b></p>
+     * <ul>
+     *   <li>Passwords are encoded and validated securely.</li>
+     * </ul>
+     * @return PasswordEncoder instance
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * <h3>getAuthManager</h3>
+     * <p>
+     * <b>Purpose:</b><br>
+     * Provides a bean for the authentication manager.<br>
+     * </p>
+     * <ul>
+     *   <li>Coordinates authentication process across providers.</li>
+     * </ul>
+     * <p><b>When is it called?</b></p>
+     * <ul>
+     *   <li>Used by Spring Security during authentication.</li>
+     * </ul>
+     * <p><b>What happens after?</b></p>
+     * <ul>
+     *   <li>Authentication manager is used to authenticate user credentials.</li>
+     * </ul>
+     * @param authConfig AuthenticationConfiguration instance
+     * @return AuthenticationManager instance
+     * @throws Exception if authentication manager creation fails
+     */
     @Bean
     public AuthenticationManager getAuthManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
@@ -65,7 +165,30 @@ public class WebSecurityConfig {
     @Autowired
     JwtAccessDeniedHandler accessDeniedHandler;
     
-    @Bean 
+    /**
+     * <h3>getFilterChain</h3>
+     * <p>
+     * <b>Purpose:</b><br>
+     * Configures the main security filter chain for HTTP requests.<br>
+     * </p>
+     * <ul>
+     *   <li>Sets up CSRF, session management, exception handling, and endpoint authorization.</li>
+     *   <li>Adds custom authentication and access denied handlers.</li>
+     *   <li>Registers the JWT authentication filter before the username/password filter.</li>
+     * </ul>
+     * <p><b>When is it called?</b></p>
+     * <ul>
+     *   <li>Automatically by Spring at application startup.</li>
+     * </ul>
+     * <p><b>What happens after?</b></p>
+     * <ul>
+     *   <li>All HTTP requests are processed according to these security rules.</li>
+     * </ul>
+     * @param http the HttpSecurity object to configure
+     * @return the configured SecurityFilterChain
+     * @throws Exception if configuration fails
+     */
+    @Bean
     SecurityFilterChain getFilterChain(HttpSecurity http) throws Exception {
         
         http.csrf(csrf -> csrf.disable())
@@ -96,7 +219,7 @@ public class WebSecurityConfig {
     
 }
 
-/**
+/*
  * For CORS config
 
 @Configuration
