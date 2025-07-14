@@ -12,6 +12,7 @@
 	<groupId>com.learning</groupId>
 	<artifactId>security</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
 	<name>security</name>
 	<description>Template project for Authentication and Authorization</description>
 	<url />
