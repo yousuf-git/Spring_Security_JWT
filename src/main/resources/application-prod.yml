@@ -1,0 +1,41 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/auth_db}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:root}
+    driver-class-name: org.postgresql.Driver
+  security:
+    user:
+      name: yousuf
+      password: yousuf
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+  logging:
+    level:
+      org.hibernate.SQL: DEBUG
+      org.hibernate.orm.jdbc.bind: TRACE
+
+yousuf:
+  app:
+    jwtSecret: ${JWT_SECRET:=========================================MYousuf=========================================}
+    jwtExpirationTimeInMs: ${JWT_EXPIRATION:86400000}
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /api
+
+# Enable Swagger/OpenAPI documentation
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html

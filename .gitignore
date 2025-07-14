@@ -2,6 +2,8 @@ ignore
 # Compiled class files
 *.class
 
+.env
+
 # Log files
 *.log
 
@@ -65,8 +67,8 @@ ehthumbs.db
 Thumbs.db
 
 # Application properties (if containing sensitive data)
-application-*.properties
-application-*.yml
+#application-*.properties
+#application-*.yml
 !application.properties
 !application.yml
 
