@@ -26,11 +26,11 @@ jobs:
 
       - name: Build with Maven
         env:
-          SPRING_PROFILES_ACTIVE: ${{ vars.SPRING_PROFILES_ACTIVE }}
-          DATABASE_PASSWORD: ${{ vars.DATABASE_PASSWORD }}
-          DATABASE_URL: ${{ vars.DATABASE_URL }}
-          DATABASE_USERNAME: ${{ vars.DATABASE_USERNAME }}
           PORT: ${{ vars.PORT }}
+          SPRING_PROFILES_ACTIVE: ${{ vars.SPRING_PROFILES_ACTIVE }}
+          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
         run: mvn clean install
 
       - name: Upload artifact for deployment job
