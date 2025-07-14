@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/auth_db}
-    username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:root}
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
   security:
     user:
@@ -23,11 +23,11 @@ spring:
 
 yousuf:
   app:
-    jwtSecret: ${JWT_SECRET:=========================================MYousuf=========================================}
-    jwtExpirationTimeInMs: ${JWT_EXPIRATION:86400000}
+    jwtSecret: ${JWT_SECRET}
+    jwtExpirationTimeInMs: ${JWT_EXPIRATION}
 
 server:
-  port: ${PORT:8080}
+  port: ${PORT}
   servlet:
     context-path: /api
 
