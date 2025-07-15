@@ -27,9 +27,9 @@ yousuf:
     jwtExpirationTimeInMs: ${JWT_EXPIRATION}
 
 server:
-  port: ${PORT}
-  servlet:
-    context-path: /api
+  port: ${PORT:8080}
+#  servlet:
+#    context-path: /
 
 # Enable Swagger/OpenAPI documentation
 springdoc:
