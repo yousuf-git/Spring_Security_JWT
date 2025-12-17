@@ -41,10 +41,10 @@ yousuf:
 # Set context path /api
 server:
   servlet:
-    context-path: /api
+    context-path: /
 
 
-# Enable Swagger/OpenAPI documentation
+  # Enable Swagger/OpenAPI documentation
 springdoc:
   api-docs:
     enabled: true

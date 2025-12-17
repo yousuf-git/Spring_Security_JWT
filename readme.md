@@ -282,37 +282,32 @@ mvn test jacoco:report
 
 [//]: # (## 🚀 Production Deployment)
 
-[//]: # ()
-[//]: # (### 🐳 Docker Support)
 
-[//]: # ()
-[//]: # (```dockerfile)
+## 🐳 Docker Support
 
-[//]: # (FROM openjdk:17-jdk-slim)
+### Build the Docker image
+```bash
+docker build -t jwt_auth_app .
+```
 
-[//]: # (COPY target/spring-security-jwt-1.0.0.jar app.jar)
+### ☁️ Run with environment variables
+```bash
+docker run -p 8080:8080 \
+-e SPRING_ACTIVE_PROFILES=prod
+-e DATABASE_URL="jdbc:postgresql://host.docker.internal:5432/auth_db" \
+-e DATABASE_USERNAME="<username>" \
+-e DATABASE_PASSWORD="<pass>" \
+-e JWT_SECRET="<secret>" \
+-e JWT_EXPIRATION="86400000" \
+jwt_auth_app
+```
 
-[//]: # (EXPOSE 8080)
+### Using docker-compose
+```bash 
+docker-compose up --build
+```
 
-[//]: # (ENTRYPOINT ["java","-jar","/app.jar"])
-
-[//]: # (```)
-
-[//]: # ()
-[//]: # (### ☁️ Environment Variables)
-
-[//]: # ()
-[//]: # (```bash)
-
-[//]: # (export DATABASE_URL=jdbc:mysql://prod-db:3306/jwt_security_db)
-
-[//]: # (export JWT_SECRET=your-super-secret-key-here)
-
-[//]: # (export JWT_EXPIRATION=86400000)
-
-[//]: # (```)
-
-[//]: # (---)
+---
 
 ## 🤝 Contributing & Support
 
@@ -326,8 +321,8 @@ mvn test jacoco:report
 
 ### 📞 Need Help?
 
-- 🐛 **Found a bug?** [Open an issue](https://github.com/yousuf-got/Spring_Security_JWT/issues)
-- 💡 **Have a suggestion?** [Start a discussion](https://github.com/yousuf-got/Spring_Security_JWT/discussions)
+- 🐛 **Found a bug?** [Open an issue](https://github.com/yousuf-git/Spring_Security_JWT/issues)
+- 💡 **Have a suggestion?** [Start a discussion](https://github.com/yousuf-git/Spring_Security_JWT/discussions)
 - 📧 **Email support**: yousuf.work09@example.com
 
 ---

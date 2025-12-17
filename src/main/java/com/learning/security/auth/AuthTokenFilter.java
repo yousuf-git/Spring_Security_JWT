@@ -94,6 +94,14 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 			
 		try {
 			String jwtToken = parseJwtFromRequest(request);
+
+			// Skip JWT processing for public endpoints
+			String path = request.getRequestURI();
+			if (path.startsWith("/actuator") || path.startsWith("/auth") || path.startsWith("/test/all") ||
+					path.startsWith("/greet") || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
+				filterChain.doFilter(request, response);
+				return;
+			}
 		
 			if (jwtToken != null && jwtUtils.validateJwt(jwtToken)) {
 				String username = jwtUtils.getUsernameFromJwtToken(jwtToken);
